@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoWatt - Energy Efficient Solutions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            ecowatt: {
+              primary: '#4CAF50',
+              secondary: '#8BC34A',
+              dark: '#2E7D32',
+              light: '#C8E6C9',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .product-card:hover {
+      transform: translateY(-5px);
+      transition: all 0.3s ease;
+    }
+    .energy-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <!-- MAIN CONTAINER -->
+  <div id="app" class="p-4 max-w-6xl mx-auto min-h-screen"></div>
+
+  <!-- POPUP AD -->
+  <div id="popupAd" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl relative max-w-md w-full">
+      <button onclick="closeAd()" class="absolute top-2 right-2 text-xl hover:text-gray-600">✖</button>
+      <div class="text-center">
+        <h3 class="text-xl font-bold text-ecowatt-primary mb-2">EcoWatt Pro Tip</h3>
+        <p class="mb-4">Upgrade to energy-efficient devices and save up to 40% on your electricity bills!</p>
+        <button onclick="closeAd()" class="bg-ecowatt-primary text-white px-4 py-2 rounded-lg hover:bg-ecowatt-dark">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      { 
+        name: "LED Tube Light", 
+        brand: "Philips", 
+        power: 18, 
+        price: 399, 
+        rating: 4.5,
+        savings: "Saves ₹1200/year compared to traditional tube lights",
+        warranty: "2 years",
+        features: ["Instant start", "Flicker-free", "50,000 hours lifespan"],
+        image: "https://m.media-amazon.com/images/I/61lJ3STC1VL._SL1500_.jpg"
+      },
+      { 
+        name: "Energy Saver Ceiling Fan", 
+        brand: "Havells", 
+        power: 50, 
+        price: 1899, 
+        rating: 4.2,
+        savings: "Saves ₹1800/year compared to conventional fans",
+        warranty: "2 years",
+        features: ["BLDC motor", "Remote control", "5 speed settings"],
+        image: "https://m.media-amazon.com/images/I/61YVjHS1+5L._SL1500_.jpg"
+      },
+      { 
+        name: "Inverter Smart AC", 
+        brand: "LG", 
+        power: 1200, 
+        price: 42000, 
+        rating: 4.7,
+        savings: "Saves ₹6000/year with inverter technology",
+        warranty: "5 years on compressor",
+        features: ["WiFi enabled", "AI energy saving", "Dual inverter"],
+        image: "https://m.media-amazon.com/images/I/71YHjVXyR0L._SL1500_.jpg"
+      },
+      { 
+        name: "Eco Iron", 
+        brand: "Usha", 
+        power: 800, 
+        price: 1299, 
+        rating: 4.0,
+        savings: "Saves ₹500/year with auto shut-off",
+        warranty: "1 year",
+        features: ["Non-stick soleplate", "Auto shut-off", "Steam boost"],
+        image: "https://m.media-amazon.com/images/I/61QGL+kWJEL._SL1500_.jpg"
+      },
+      { 
+        name: "Smart Inverter Fridge", 
+        brand: "Samsung", 
+        power: 180, 
+        price: 32000, 
+        rating: 4.6,
+        savings: "Saves ₹4000/year with inverter technology",
+        warranty: "10 years on compressor",
+        features: ["Digital inverter", "Convertible freezer", "Twin cooling"],
+        image: "https://m.media-amazon.com/images/I/71yVQ7yQqIL._SL1500_.jpg"
+      },
+      { 
+        name: "Solar Water Heater", 
+        brand: "Racold", 
+        power: 0, 
+        price: 25000, 
+        rating: 4.3,
+        savings: "Saves ₹8000/year using solar energy",
+        warranty: "5 years",
+        features: ["100L capacity", "Solar + electric backup", "Corrosion resistant"],
+        image: "https://m.media-amazon.com/images/I/71+1+3S4J+L._SL1500_.jpg"
+      },
+      { 
+        name: "Smart Plug", 
+        brand: "Wipro", 
+        power: 0, 
+        price: 799, 
+        rating: 4.1,
+        savings: "Saves ₹1500/year by monitoring usage",
+        warranty: "1 year",
+        features: ["Energy monitoring", "Remote control", "Scheduling"],
+        image: "https://m.media-amazon.com/images/I/61+1+3S4J+L._SL1500_.jpg"
+      }
+    ];
+
+    let selectedCategory = '';
+    let selectedBrand = '';
+    let selectedList = [];
+
+    const app = document.getElementById('app');
+
+    function closeAd() {
+      document.getElementById('popupAd').classList.add('hidden');
+    }
+
+    function showHome() {
+      app.innerHTML = `
+        <header class="mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center">
+              <div class="bg-ecowatt-primary text-white p-2 rounded-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 class="text-3xl font-bold text-ecowatt-dark">Eco<span class="text-ecowatt-primary">Watt</span></h1>
+            </div>
+            <button onclick="showSelectedList()" class="relative p-2 text-ecowatt-dark hover:bg-ecowatt-light rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              ${selectedList.length > 0 ? `<span class="absolute -top-1 -right-1 bg-ecowatt-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">${selectedList.length}</span>` : ''}
+            </button>
+          </div>
+          <p class="text-gray-600 mb-6">Discover energy-efficient products that save money and reduce your carbon footprint.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div onclick="showBrands('home')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg cursor-pointer transition-all border-l-4 border-ecowatt-primary">
+            <div class="flex items-center mb-3">
+              <div class="bg-ecowatt-light p-2 rounded-lg mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ecowatt-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold">Home Essentials</h2>
+            </div>
+            <p class="text-gray-600">Basic energy-efficient products for your home</p>
+          </div>
+          
+          <div onclick="showBrands('smart')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg cursor-pointer transition-all border-l-4 border-ecowatt-primary">
+            <div class="flex items-center mb-3">
+              <div class="bg-ecowatt-light p-2 rounded-lg mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-ecowatt-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold">Smart Home</h2>
+            </div>
+            <p class="text-gray-600">Advanced smart devices for maximum energy savings</p>
+          </div>
+        </div>
+
+        <div class="bg-ecowatt-light p-4 rounded-lg">
+          <h3 class="font-semibold text-ecowatt-dark mb-2">Did You Know?</h3>
+          <p class="text-gray-700">Switching to energy-efficient appliances can reduce your electricity bill by 30-50% while helping the environment.</p>
+        </div>
+      `;
+    }
+
+    function showBrands(category) {
+      selectedCategory = category;
+      document.getElementById('popupAd').classList.remove('hidden');
+
+      const brands = [...new Set(products.map(p => p.brand))];
+      const categoryTitle = category === 'home' ? 'Home Essentials' : 'Smart Home';
+
+      app.innerHTML = `
+        <div class="flex items-center mb-6">
+          <button onclick="showHome()" class="mr-4 text-ecowatt-dark hover:text-ecowatt-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h2 class="text-2xl font-bold text-ecowatt-dark">${categoryTitle}</h2>
+        </div>
+
+        <p class="mb-6 text-gray-600">Select a brand to explore their energy-efficient products</p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-8">
+          ${brands.map(brand => `
+            <div onclick="showProducts('${brand}')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex flex-col items-center">
+              <div class="bg-gray-100 p-3 rounded-full mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-ecowatt-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 class="font-medium text-center">${brand}</h3>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function showProducts(brand) {
+      selectedBrand = brand;
+      const filtered = products.filter(p => p.brand === brand).sort((a, b) => a.power - b.power);
+
+      app.innerHTML = `
+        <div class="flex items-center mb-6">
+          <button onclick="showBrands('${selectedCategory}')" class="mr-4 text-ecowatt-dark hover:text-ecowatt-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h2 class="text-2xl font-bold text-ecowatt-dark">${brand} Products</h2>
+        </div>
+
+        <div class="mb-4 flex justify-between items-center">
+          <p class="text-gray-600">${filtered.length} energy-efficient products available</p>
+          <div class="flex items-center">
+            <span class="text-sm mr-2">Sort by:</span>
+            <select onchange="sortProducts(this.value)" class="border rounded p-1 text-sm">
+              <option value="power-asc">Power (Low to High)</option>
+              <option value="power-desc">Power (High to Low)</option>
+              <option value="price-asc">Price (Low to High)</option>
+              <option value="price-desc">Price (High to Low)</option>
+              <option value="rating">Rating</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${filtered.map(p => `
+            <div class="product-card bg-white rounded-xl shadow-md overflow-hidden relative">
+              ${p.power < 100 ? `<span class="energy-badge bg-ecowatt-primary text-white text-xs font-bold px-2 py-1 rounded-full">ECO</span>` : ''}
+              <div class="h-48 bg-gray-100 flex items-center justify-center p-4">
+                <img src="${p.image}" alt="${p.name}" class="h-full object-contain">
+              </div>
+              <div class="p-5">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-semibold text-lg">${p.name}</h3>
+                  <span class="bg-ecowatt-light text-ecowatt-dark text-xs px-2 py-1 rounded">${p.rating} ★</span>
+                </div>
+                
+                <div class="flex justify-between text-sm mb-3">
+                  <div>
+                    <span class="font-medium">${p.power}W</span>
+                    <span class="text-gray-500 ml-2">Power</span>
+                  </div>
+                  <div>
+                    <span class="font-medium">₹${p.price}</span>
+                  </div>
+                </div>
+                
+                <div class="text-sm text-green-700 bg-green-50 p-2 rounded mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  ${p.savings}
+                </div>
+                
+                <div class="text-xs text-gray-500 mb-3">
+                  <span class="font-medium">Warranty:</span> ${p.warranty}
+                </div>
+                
+                <div class="flex flex-wrap gap-1 mb-4">
+                  ${p.features.map(f => `<span class="text-xs bg-gray-100 px-2 py-1 rounded">${f}</span>`).join('')}
+                </div>
+                
+                <div class="flex justify-between items-center">
+                  <div class="flex space-x-2">
+                    <a href="https://www.amazon.in/s?k=${encodeURIComponent(p.name + ' ' + p.brand)}" target="_blank" class="text-xs bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700">Amazon</a>
+                    <a href="https://www.flipkart.com/search?q=${encodeURIComponent(p.name + ' ' + p.brand)}" target="_blank" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Flipkart</a>
+                  </div>
+                  <button onclick='addToList(${JSON.stringify(p)})' class="text-xs bg-ecowatt-primary text-white px-3 py-1 rounded hover:bg-ecowatt-dark flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function sortProducts(sortBy) {
+      const filtered = products.filter(p => p.brand === selectedBrand);
+      let sorted = [];
+      
+      switch(sortBy) {
+        case 'power-asc':
+          sorted = filtered.sort((a, b) => a.power - b.power);
+          break;
+        case 'power-desc':
+          sorted = filtered.sort((a, b) => b.power - a.power);
+          break;
+        case 'price-asc':
+          sorted = filtered.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-desc':
+          sorted = filtered.sort((a, b) => b.price - a.price);
+          break;
+        case 'rating':
+          sorted = filtered.sort((a, b) => b.rating - a.rating);
+          break;
+        default:
+          sorted = filtered;
+      }
+      
+      // Re-render products with new sorting
+      const productsContainer = document.querySelector('.grid');
+      if (productsContainer) {
+        productsContainer.innerHTML = sorted.map(p => `
+          <div class="product-card bg-white rounded-xl shadow-md overflow-hidden relative">
+            ${p.power < 100 ? `<span class="energy-badge bg-ecowatt-primary text-white text-xs font-bold px-2 py-1 rounded-full">ECO</span>` : ''}
+            <div class="h-48 bg-gray-100 flex items-center justify-center p-4">
+              <img src="${p.image}" alt="${p.name}" class="h-full object-contain">
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold text-lg">${p.name}</h3>
+                <span class="bg-ecowatt-light text-ecowatt-dark text-xs px-2 py-1 rounded">${p.rating} ★</span>
+              </div>
+              
+              <div class="flex justify-between text-sm mb-3">
+                <div>
+                  <span class="font-medium">${p.power}W</span>
+                  <span class="text-gray-500 ml-2">Power</span>
+                </div>
+                <div>
+                  <span class="font-medium">₹${p.price}</span>
+                </div>
+              </div>
+              
+              <div class="text-sm text-green-700 bg-green-50 p-2 rounded mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                ${p.savings}
+              </div>
+              
+              <div class="text-xs text-gray-500 mb-3">
+                <span class="font-medium">Warranty:</span> ${p.warranty}
+              </div>
+              
+              <div class="flex flex-wrap gap-1 mb-4">
+                ${p.features.map(f => `<span class="text-xs bg-gray-100 px-2 py-1 rounded">${f}</span>`).join('')}
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-2">
+                  <a href="https://www.amazon.in/s?k=${encodeURIComponent(p.name + ' ' + p.brand)}" target="_blank" class="text-xs bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700">Amazon</a>
+                  <a href="https://www.flipkart.com/search?q=${encodeURIComponent(p.name + ' ' + p.brand)}" target="_blank" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Flipkart</a>
+                </div>
+                <button onclick='addToList(${JSON.stringify(p)})' class="text-xs bg-ecowatt-primary text-white px-3 py-1 rounded hover:bg-ecowatt-dark flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function addToList(product) {
+      if (!selectedList.find(p => p.name === product.name)) {
+        selectedList.push(product);
+        
+        // Show toast notification
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-ecowatt-primary text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fadeIn';
+        toast.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          ${product.name} added to your list
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.classList.remove('animate-fadeIn');
+          toast.classList.add('animate-fadeOut');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      } else {
+        // Show already added notification
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fadeIn';
+        toast.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          ${product.name} is already in your list
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.classList.remove('animate-fadeIn');
+          toast.classList.add('animate-fadeOut');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+      
+      // Update cart count
+      const cartCount = document.querySelector('button[onclick="showSelectedList()"] span');
+      if (cartCount) {
+        cartCount.textContent = selectedList.length;
+      }
+    }
+
+    function showSelectedList() {
+      if (selectedList.length === 0) {
+        app.innerHTML = `
+          <div class="flex items-center mb-6">
+            <button onclick="showHome()" class="mr-4 text-ecowatt-dark hover:text-ecowatt-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h2 class="text-2xl font-bold text-ecowatt-dark">Your Selected Products</h2>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-md p-8 text-center">
+            <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Your list is empty</h3>
+            <p class="text-gray-600 mb-4">Add some energy-efficient products to get started</p>
+            <button onclick="showHome()" class="bg-ecowatt-primary text-white px-4 py-2 rounded-lg hover:bg-ecowatt-dark">
+              Browse Products
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Calculate total savings and cost
+      const totalCost = selectedList.reduce((sum, item) => sum + item.price, 0);
+      const totalPower = selectedList.reduce((sum, item) => sum + item.power, 0);
+      
+      // Extract savings numbers (this is simplified - in a real app you'd parse properly)
+      const savingsNumbers = selectedList.map(item => {
+        const match = item.savings.match(/Saves ₹(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      });
+      const totalAnnualSavings = savingsNumbers.reduce((sum, num) => sum + num, 0);
+
+      app.innerHTML = `
+        <div class="flex items-center mb-6">
+          <button onclick="${selectedBrand ? `showProducts('${selectedBrand}')` : 'showHome()'}" class="mr-4 text-ecowatt-dark hover:text-ecowatt-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h2 class="text-2xl font-bold text-ecowatt-dark">Your Selected Products</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-4">
+            ${selectedList.map((p, i) => `
+              <div class="bg-white rounded-xl shadow-md p-4 flex items-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-lg mr-4 flex-shrink-0 flex items-center justify-center">
+                  <img src="${p.image}" alt="${p.name}" class="h-12 object-contain">
+                </div>
+                <div class="flex-grow">
+                  <div class="flex justify-between">
+                    <h3 class="font-medium">${p.name}</h3>
+                    <span class="text-ecowatt-primary font-medium">₹${p.price}</span>
+                  </div>
+                  <div class="text-sm text-gray-500 mb-1">${p.power}W • ${p.brand}</div>
+                  <div class="text-xs text-green-700">${p.savings}</div>
+                </div>
+                <button onclick="removeFromList(${i})" class="ml-4 text-red-500 hover:text-red-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="bg-white rounded-xl shadow-md p-6 h-fit sticky top-4">
+            <h3 class="font-bold text-lg mb-4">Summary</h3>
+            
+            <div class="space-y-3 mb-6">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Items</span>
+                <span class="font-medium">${selectedList.length}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Power</span>
+                <span class="font-medium">${totalPower}W</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Cost</span>
+                <span class="font-medium">₹${totalCost}</span>
+              </div>
+              <div class="flex justify-between text-green-700">
+                <span>Annual Savings</span>
+                <span class="font-medium">₹${totalAnnualSavings}</span>
+              </div>
+            </div>
+            
+            <div class="bg-ecowatt-light rounded-lg p-4 mb-6">
+              <h4 class="font-semibold text-ecowatt-dark mb-2">Estimated Impact</h4>
+              <p class="text-sm text-gray-700">By switching to these products, you could save approximately ₹${Math.round(totalAnnualSavings/12)} per month on your electricity bill.</p>
+            </div>
+            
+            <button class="w-full bg-ecowatt-primary text-white py-3 rounded-lg hover:bg-ecowatt-dark font-medium">
+              Proceed to Checkout
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function removeFromList(index) {
+      selectedList.splice(index, 1);
+      showSelectedList();
+      
+      // Update cart count
+      const cartCount = document.querySelector('button[onclick="showSelectedList()"] span');
+      if (cartCount) {
+        cartCount.textContent = selectedList.length;
+        if (selectedList.length === 0) {
+          cartCount.remove();
+        }
+      }
+    }
+
+    // Initialize
+    showHome();
+  </script>
+</body>
+</html>
